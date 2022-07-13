@@ -11,6 +11,20 @@ const main = async () => {
     console.log("depositing......")
     await lendingPool.deposit(WETHADDRESS, AMOUNT, deployer, 0)
     console.log("Deposited")
+    await getBorrowUserData(lendingPool, deployer) // gives out deposited,debt,amount we can borrow
+    // find conversion rate to DAI
+    // Borrow
+    // how much we have borrowed,how much we have in collateral,how much we can borrow
+}
+
+const getBorrowUserData = async (lendingPool, account) => {
+    // gets How much collateral use have,How much debt user have & how much they can borrow
+    const { totalCollateralETH, totalDebtETH, availableBorrowsETH } =
+        await lendingPool.getUserAccountData(account)
+    console.log(`You have ${totalCollateralETH} worth of eth deposited`)
+    console.log(`You have ${totalDebtETH} worth of eth borrowed`)
+    console.log(`You can borrow ${availableBorrowsETH} worth of ETH`)
+    return { availableBorrowsETH, totalDebtETH }
 }
 const getLendingPool = async (account) => {
     const lendingPoolAddressProvider = await ethers.getContractAt(
