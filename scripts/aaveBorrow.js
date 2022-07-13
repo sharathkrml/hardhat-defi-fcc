@@ -11,12 +11,32 @@ const main = async () => {
     console.log("depositing......")
     await lendingPool.deposit(WETHADDRESS, AMOUNT, deployer, 0)
     console.log("Deposited")
-    await getBorrowUserData(lendingPool, deployer) // gives out deposited,debt,amount we can borrow
+    let { availableBorrowsETH, totalDebtETH } = await getBorrowUserData(lendingPool, deployer) // gives out deposited,debt,amount we can borrow
     // find conversion rate to DAI
+    const daiPrice = await getDaiPrice() //Price of 1 Dai in ETH
+    const amountofDaiToBorrow = availableBorrowsETH.toString() * 0.95 * (1 / daiPrice.toNumber()) // convert eth to dai
+    console.log(`You can borrow ${amountofDaiToBorrow} DAI`)
+    const amountofDaiToBorrowinWei = ethers.utils.parseEther(amountofDaiToBorrow.toString())
+    console.log(`You can borrow ${amountofDaiToBorrowinWei} wei DAI`)
+
     // Borrow
+
     // how much we have borrowed,how much we have in collateral,how much we can borrow
 }
 
+const getDaiPrice = async () => {
+    //get price of 1 dai in ether
+    const daiEthPriceFeed = await ethers.getContractAt(
+        "AggregatorV3Interface",
+        "0x773616E4d11A78F511299002da57A0a94577F1f4"
+    )
+    const { answer } = await daiEthPriceFeed.latestRoundData()
+    const decimal = await daiEthPriceFeed.decimals()
+    console.log(`decimals = ${decimal.toString()}`)
+    console.log(`1Dai = ${answer.toString()} Eth`)
+    // 936716598501778
+    return answer
+}
 const getBorrowUserData = async (lendingPool, account) => {
     // gets How much collateral use have,How much debt user have & how much they can borrow
     const { totalCollateralETH, totalDebtETH, availableBorrowsETH } =
@@ -27,6 +47,7 @@ const getBorrowUserData = async (lendingPool, account) => {
     return { availableBorrowsETH, totalDebtETH }
 }
 const getLendingPool = async (account) => {
+    // gives out contract lendingPool
     const lendingPoolAddressProvider = await ethers.getContractAt(
         "ILendingPoolAddressesProvider",
         "0xb53c1a33016b2dc2ff3653530bff1848a515c8c5",
