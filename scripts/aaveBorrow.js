@@ -26,6 +26,25 @@ const main = async () => {
     await borrowDai(daiAddress, lendingPool, amountofDaiToBorrowWei, deployer)
     // get updated data
     await getBorrowUserData(lendingPool, deployer)
+    // You have 20000000112503753 worth of eth deposited
+    // You have 15674999999999999 worth of eth borrowed
+    // You can borrow 825000092815597 worth of ETH
+
+    // Repaying
+    await repay(amountofDaiToBorrowWei, daiAddress, lendingPool, deployer)
+    // get updated data
+
+    // You have 20000000190767233 worth of eth deposited
+    // You have 863137685 worth of eth borrowed - interest of borrowed amount
+    // You can borrow 16499999294245282 worth of ETH
+
+    await getBorrowUserData(lendingPool, deployer)
+}
+const repay = async (amount, daiAddress, lendingPool, account) => {
+    await approveERC20(daiAddress, lendingPool.address, amount, account)
+    const repayTx = await lendingPool.repay(daiAddress, amount, 1, account)
+    await repayTx.wait(1)
+    console.log("Repaid!!")
 }
 const borrowDai = async (daiAddress, lendingPool, amountofDaiToBorrowWei, account) => {
     const borrowTx = await lendingPool.borrow(daiAddress, amountofDaiToBorrowWei, 1, 0, account)
